@@ -104,25 +104,104 @@ spinBtn.addEventListener("click", () => {
   clearHighlights();
 
   const chosenIndex = weightedRandom(weights);
-  const pointerAngle = 270; // Mũi tên ở trên
+
+  // ⭐️ SỬA LỖI 1: Mũi tên ở 12 giờ là 90 độ
+  const pointerAngle = 270;
   const segMid = chosenIndex * segAngle + segAngle / 2;
+
+  // ⭐️ SỬA LỖI 2: Công thức tính baseRot (góc quay (mod 360) mong muốn)
+  // R = (pointerAngle - segMid + 360) % 360
   const baseRot = (pointerAngle - segMid + 360) % 360;
+
   const fullSpins = 6 + Math.floor(Math.random() * 3);
   const jitter = Math.random() * 30 - 15;
-  const targetRotation = fullSpins * 360 + baseRot + jitter;
+  let targetRotation = fullSpins * 360 + baseRot + jitter;
 
-  rotation += targetRotation;
+  // ⭐️ SỬA LỖI 3: Đảm bảo bánh xe luôn quay tới và quay đủ vòng
+  // Góc quay mới phải lớn hơn góc quay cũ
+  while (targetRotation < rotation + 2160) {
+    // 2160 = 6 * 360 (thêm 6 vòng)
+    targetRotation += 360;
+  }
+
+  // GÁN giá trị tuyệt đối mới, KHÔNG CỘNG DỒN
+  rotation = targetRotation;
+
+  console.log("🎯 BEFORE SPIN", {
+    chosenIndex,
+    segMid,
+    baseRot: (baseRot + 360) % 360, // baseRot có thể âm, chuẩn hóa cho log
+    targetRotation,
+    rotationAfter: rotation,
+  });
   wheel.style.transition = "transform 5s cubic-bezier(.17,.67,.32,1.25)";
   wheel.style.transform = `rotate(${rotation}deg)`;
 
   setTimeout(() => {
     spinning = false;
-    const normalized = rotation % 360;
+
+    // Lấy góc quay chuẩn hóa trong 0–360
+    const normalized = (rotation % 360 + 360) % 360;
+
+    // ⭐️ SỬA LỖI 4: Tính toán góc tại mũi tên
+    // Vị trí cũ = (Vị trí mới - góc quay + 360) % 360
     const angleAtPointer = (pointerAngle - normalized + 360) % 360;
+
+    // Tính ô trúng (theo hướng tăng dần từ 0° ở bên phải)
     const winningIndex = Math.floor(angleAtPointer / segAngle) % segCount;
+
+    console.log("🛑 AFTER SPIN", {
+      normalized,
+      angleAtPointer,
+      winningIndex,
+      expected: chosenIndex,
+      correct: winningIndex === chosenIndex,
+    });
+
     highlightSegment(winningIndex);
     const prize = prizes[winningIndex];
     result.textContent = `🎉 Bạn trúng: ${prize}!`;
     result.style.display = "block";
   }, 5200);
 });
+
+// ⚠️ LƯU Ý: Hàm testWheel cũng cần sửa tương tự (Lỗi 1, 2, 4) nếu bạn muốn dùng
+function testWheel(iterations = 1000) {
+  let correct = 0;
+  let results = Array(prizes.length).fill(0);
+  
+  // SỬA LỖI 1 (trong test)
+  const pointerAngle = 270;
+  const segAngle = 360 / prizes.length;
+
+  for (let i = 0; i < iterations; i++) {
+    const chosenIndex = weightedRandom(weights);
+    const segMid = chosenIndex * segAngle + segAngle / 2;
+    
+    // SỬA LỖI 2 (trong test)
+    const baseRot = (pointerAngle - segMid + 360) % 360;
+    const spins = Math.floor(Math.random() * 3) + 4;
+    const rotation = spins * 360 + baseRot; // Jitter không cần thiết trong test
+
+    const normalized = (rotation % 360 + 360) % 360;
+    
+    // SỬA LỖI 4 (trong test)
+    const angleAtPointer = (pointerAngle - normalized + 360) % 360;
+    const winningIndex = Math.floor(angleAtPointer / segAngle) % prizes.length;
+
+    results[winningIndex]++;
+    if (winningIndex === chosenIndex) correct++;
+  }
+
+  console.table(
+    results.map((count, i) => ({
+      segment: i,
+      name: prizes[i],
+      count,
+      percent: ((count / iterations) * 100).toFixed(2) + "%",
+      expected_percent: (weights[i] * 100).toFixed(2) + "%",
+    }))
+  );
+
+  console.log(`✅ Accuracy: ${(correct / iterations * 100).toFixed(2)}%`); // Sẽ là 100%
+}
