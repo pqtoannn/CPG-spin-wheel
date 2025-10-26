@@ -6,13 +6,15 @@ const prizeData = [
   { name: "Ghim cài Comandante", qty: 5 },
   { name: "Túi cà phê Lúave (Phin)", qty: 3 },
   { name: "Tool Bag Comandante", qty: 10 },
-  { name: "Khay cafe Comandante", qty: 9 },
+  { name: "Khay cafe Comandante nhỏ", qty: 5 },
+  { name: "Khay cafe Comandante lớn", qty: 4 },
   { name: "Áo thun Comandante", qty: 5 },
+  { name: "Sách Atlas Coffee Worlds", qty: 1 },
 ];
-
 // 🎯 Áp dụng công thức lũy thừa để tăng xác suất vật phẩm nhiều
-const exponent = 1.5;
-let weights = prizeData.map((p) => Math.pow(p.qty, exponent));
+// const exponent = 1.5;
+// let weights = prizeData.map((p) => Math.pow(p.qty, exponent));
+let weights = prizeData.map((p) => p.qty);
 const totalWeight = weights.reduce((a, b) => a + b, 0);
 weights = weights.map((w) => w / totalWeight);
 
