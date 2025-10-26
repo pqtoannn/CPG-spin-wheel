@@ -162,8 +162,10 @@ spinBtn.addEventListener("click", () => {
 
     highlightSegment(winningIndex);
     const prize = prizes[winningIndex];
-    result.textContent = `🎉 Bạn trúng: ${prize}!`;
-    result.style.display = "block";
+    // result.textContent = `🎉 Bạn trúng: ${prize}!`;
+    // result.style.display = "block";
+
+    showPrizePopup(prize);
 
     launchFireworks(4000);
   }, 5200);
@@ -214,102 +216,207 @@ function testWheel(iterations = 1000) {
   console.log(`✅ Accuracy: ${(correct / iterations * 100).toFixed(2)}%`);
 }
 
+function showPrizePopup(prize) {
+  // Tạo lớp nền mờ
+  const overlay = document.createElement("div");
+  overlay.className = "popup-overlay";
+
+  // Tạo nội dung popup
+  const popup = document.createElement("div");
+  popup.className = "popup";
+  popup.innerHTML = `
+    <h2>🎉 Chúc mừng bạn!</h2>
+    <p>Bạn đã trúng: <strong>${prize}</strong></p>
+    <button>OK</button>
+  `;
+
+  overlay.appendChild(popup);
+  document.body.appendChild(overlay);
+
+  // Kích hoạt pháo hoa xung quanh
+  launchFireworks(4000);
+
+  // Đóng popup khi nhấn nút
+  popup.querySelector("button").addEventListener("click", () => {
+    overlay.remove();
+  });
+}
+
+
+// function launchFireworks(duration = 4000) {
+//   const canvas = document.createElement("canvas");
+//   const ctx = canvas.getContext("2d");
+//   canvas.id = "fireworks";
+//   document.body.appendChild(canvas);
+//   canvas.width = innerWidth;
+//   canvas.height = innerHeight;
+//   canvas.style.position = "fixed";
+//   canvas.style.left = 0;
+//   canvas.style.top = 0;
+//   canvas.style.pointerEvents = "none";
+//   canvas.style.zIndex = 9999;
+
+//   const particles = [];
+//   const colors = ["#ff0043", "#ffae00", "#00ffcc", "#4dff00", "#ff00ff", "#00b3ff"];
+
+//   class Particle {
+//     constructor(x, y, color) {
+//       this.x = x;
+//       this.y = y;
+//       this.color = color;
+//       this.radius = Math.random() * 2 + 1;
+//       const angle = Math.random() * Math.PI * 2;
+//       const speed = Math.random() * 6 + 2;
+//       this.vx = Math.cos(angle) * speed;
+//       this.vy = Math.sin(angle) * speed;
+//       this.alpha = 1;
+//       this.decay = 0.015 + Math.random() * 0.02;
+//       this.gravity = 0.05 + Math.random() * 0.05;
+//     }
+
+//     update() {
+//       this.x += this.vx;
+//       this.y += this.vy;
+//       this.vy += this.gravity;
+//       this.alpha -= this.decay;
+//     }
+
+//     draw() {
+//       ctx.globalAlpha = this.alpha;
+//       const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius * 3);
+//       grad.addColorStop(0, "white");
+//       grad.addColorStop(0.2, this.color);
+//       grad.addColorStop(1, "transparent");
+//       ctx.fillStyle = grad;
+//       ctx.beginPath();
+//       ctx.arc(this.x, this.y, this.radius * 2, 0, Math.PI * 2);
+//       ctx.fill();
+//     }
+//   }
+
+//   function explode(x, y) {
+//     const color = colors[Math.floor(Math.random() * colors.length)];
+//     for (let i = 0; i < 60; i++) {
+//       particles.push(new Particle(x, y, color));
+//     }
+//   }
+
+//   function randomExplosion() {
+//     const x = Math.random() * canvas.width * 0.8 + canvas.width * 0.1;
+//     const y = Math.random() * canvas.height * 0.4 + canvas.height * 0.1;
+//     explode(x, y);
+//   }
+
+//   let running = true;
+//   const endTime = Date.now() + duration;
+
+//   function animate() {
+//     // 💡 KHÔNG tô nền đen nữa, chỉ làm mờ nhẹ pháo hoa cũ
+//     ctx.globalCompositeOperation = "destination-out";
+//     ctx.fillStyle = "rgba(0,0,0,0.2)";
+//     ctx.fillRect(0, 0, canvas.width, canvas.height);
+//     ctx.globalCompositeOperation = "lighter";
+
+//     particles.forEach((p, i) => {
+//       p.update();
+//       p.draw();
+//       if (p.alpha <= 0) particles.splice(i, 1);
+//     });
+
+//     if (Date.now() < endTime && running) {
+//       if (Math.random() < 0.08) randomExplosion();
+//       requestAnimationFrame(animate);
+//     } else if (particles.length > 0) {
+//       requestAnimationFrame(animate);
+//     } else {
+//       document.body.removeChild(canvas);
+//     }
+//   }
+
+//   animate();
+
+//   window.addEventListener("resize", () => {
+//     canvas.width = innerWidth;
+//     canvas.height = innerHeight;
+//   });
+// }
+
 function launchFireworks(duration = 4000) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
-  canvas.id = "fireworks";
-  document.body.appendChild(canvas);
-  canvas.width = innerWidth;
-  canvas.height = innerHeight;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
   canvas.style.position = "fixed";
   canvas.style.left = 0;
   canvas.style.top = 0;
   canvas.style.pointerEvents = "none";
-  canvas.style.zIndex = 9999;
+  canvas.style.zIndex = 9997;
+  document.body.appendChild(canvas);
 
+  const colors = ["#ff0043", "#ffd700", "#00e0ff", "#7fff00", "#ff00ff", "#ff7b00"];
   const particles = [];
-  const colors = ["#ff0043", "#ffae00", "#00ffcc", "#4dff00", "#ff00ff", "#00b3ff"];
 
-  class Particle {
-    constructor(x, y, color) {
-      this.x = x;
-      this.y = y;
-      this.color = color;
-      this.radius = Math.random() * 2 + 1;
+  function createExplosion(x, y) {
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    for (let i = 0; i < 80; i++) {
       const angle = Math.random() * Math.PI * 2;
       const speed = Math.random() * 6 + 2;
-      this.vx = Math.cos(angle) * speed;
-      this.vy = Math.sin(angle) * speed;
-      this.alpha = 1;
-      this.decay = 0.015 + Math.random() * 0.02;
-      this.gravity = 0.05 + Math.random() * 0.05;
-    }
-
-    update() {
-      this.x += this.vx;
-      this.y += this.vy;
-      this.vy += this.gravity;
-      this.alpha -= this.decay;
-    }
-
-    draw() {
-      ctx.globalAlpha = this.alpha;
-      const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.radius * 3);
-      grad.addColorStop(0, "white");
-      grad.addColorStop(0.2, this.color);
-      grad.addColorStop(1, "transparent");
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.radius * 2, 0, Math.PI * 2);
-      ctx.fill();
+      particles.push({
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        alpha: 1,
+        color,
+        radius: Math.random() * 2 + 1,
+        decay: 0.008 + Math.random() * 0.02,
+        gravity: 0.04,
+      });
     }
   }
-
-  function explode(x, y) {
-    const color = colors[Math.floor(Math.random() * colors.length)];
-    for (let i = 0; i < 60; i++) {
-      particles.push(new Particle(x, y, color));
-    }
-  }
-
-  function randomExplosion() {
-    const x = Math.random() * canvas.width * 0.8 + canvas.width * 0.1;
-    const y = Math.random() * canvas.height * 0.4 + canvas.height * 0.1;
-    explode(x, y);
-  }
-
-  let running = true;
-  const endTime = Date.now() + duration;
 
   function animate() {
-    // 💡 KHÔNG tô nền đen nữa, chỉ làm mờ nhẹ pháo hoa cũ
     ctx.globalCompositeOperation = "destination-out";
     ctx.fillStyle = "rgba(0,0,0,0.2)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.globalCompositeOperation = "lighter";
 
     particles.forEach((p, i) => {
-      p.update();
-      p.draw();
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += p.gravity;
+      p.alpha -= p.decay;
+
       if (p.alpha <= 0) particles.splice(i, 1);
+
+      ctx.beginPath();
+      const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius * 3);
+      grad.addColorStop(0, "white");
+      grad.addColorStop(0.2, p.color);
+      grad.addColorStop(1, "transparent");
+      ctx.fillStyle = grad;
+      ctx.globalAlpha = p.alpha;
+      ctx.arc(p.x, p.y, p.radius * 2, 0, Math.PI * 2);
+      ctx.fill();
     });
 
-    if (Date.now() < endTime && running) {
-      if (Math.random() < 0.08) randomExplosion();
-      requestAnimationFrame(animate);
-    } else if (particles.length > 0) {
+    if (Date.now() < endTime || particles.length > 0) {
       requestAnimationFrame(animate);
     } else {
       document.body.removeChild(canvas);
     }
   }
 
+  const endTime = Date.now() + duration;
   animate();
 
-  window.addEventListener("resize", () => {
-    canvas.width = innerWidth;
-    canvas.height = innerHeight;
-  });
+  const interval = setInterval(() => {
+    const x = Math.random() * window.innerWidth * 0.8 + window.innerWidth * 0.1;
+    const y = Math.random() * window.innerHeight * 0.4 + window.innerHeight * 0.1;
+    createExplosion(x, y);
+  }, 400);
+
+  setTimeout(() => clearInterval(interval), duration - 500);
 }
 
 
